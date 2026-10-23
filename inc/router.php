@@ -33,6 +33,7 @@ add_filter('user_trailingslashit', function ($url) {
     return preg_match('~\.html/?(\?.*)?$~', $url) ? preg_replace('~\.html/(\?|$)~', '.html$1', $url) : $url;
 });
 add_filter('redirect_canonical', function ($redirect, $requested) {
+    if (get_query_var('ion_static')) return false;
     return preg_match('~\.html(\?.*)?$~', $requested) ? false : $redirect;
 }, 10, 2);
 
