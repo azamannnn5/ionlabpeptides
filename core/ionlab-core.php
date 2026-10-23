@@ -115,7 +115,7 @@ function ionlab_card_html($p, $entry, $cats, $cat_terms, $legacy) {
     if (!$tpl) return '';
     $title = esc_html($entry['name']);
     $url = esc_attr($entry['url']);
-    $img = esc_url($entry['image']);
+    $img = preg_match('~^(https?:)?//~', $entry['image']) ? esc_url($entry['image']) : esc_attr($entry['image']);
     $in = $entry['inStock'];
     $prices = $entry['type'] === 'variable' ? array_column($entry['vars'], 'price') : array($entry['price']);
     $min = $prices ? min($prices) : 0; $max = $prices ? max($prices) : 0;
