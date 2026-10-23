@@ -1,0 +1,144 @@
+[
+  {
+    "id": 92,
+    "name": "All",
+    "slug": "all",
+    "description": "",
+    "parent": 82,
+    "count": 74,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/peptides/all/"
+  },
+  {
+    "id": 51,
+    "name": "Antioxidant &amp; Cellular Signaling",
+    "slug": "antioxidant-cellular-signaling",
+    "description": "",
+    "parent": 0,
+    "count": 54,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/antioxidant-cellular-signaling/"
+  },
+  {
+    "id": 49,
+    "name": "Bioenergetic Pathway Modulators",
+    "slug": "bioenergetic-pathway-modulators",
+    "description": "",
+    "parent": 0,
+    "count": 21,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/bioenergetic-pathway-modulators/"
+  },
+  {
+    "id": 95,
+    "name": "Blends",
+    "slug": "blends",
+    "description": "",
+    "parent": 82,
+    "count": 8,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/peptides/blends/"
+  },
+  {
+    "id": 96,
+    "name": "Lab Supplies",
+    "slug": "lab-supplies",
+    "description": "",
+    "parent": 82,
+    "count": 6,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/peptides/lab-supplies/"
+  },
+  {
+    "id": 93,
+    "name": "Lyophilized",
+    "slug": "lyophilized",
+    "description": "",
+    "parent": 82,
+    "count": 55,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/peptides/lyophilized/"
+  },
+  {
+    "id": 47,
+    "name": "Others",
+    "slug": "others",
+    "description": "Our “Other” category includes a variety of essential research materials and supporting compounds that do not fall under specific functional categories. From carriers and diluents to specialized peptides, these products ensure researchers have access to high-quality materials needed for a broad range of experimental applications.",
+    "parent": 0,
+    "count": 11,
+    "image": {
+      "id": 2331,
+      "src": "https://ionpeptide.com/wp-content/uploads/2025/09/image-48.png",
+      "thumbnail": "https://ionpeptide.com/wp-content/uploads/2025/09/image-48-300x300.png",
+      "srcset": "https://ionpeptide.com/wp-content/uploads/2025/09/image-48.png 556w, https://ionpeptide.com/wp-content/uploads/2025/09/image-48-300x300.png 300w, https://ionpeptide.com/wp-content/uploads/2025/09/image-48-100x100.png 100w, https://ionpeptide.com/wp-content/uploads/2025/09/image-48-150x150.png 150w, https://ionpeptide.com/wp-content/uploads/2025/09/image-48-50x50.png 50w",
+      "sizes": "(max-width: 556px) 100vw, 556px",
+      "thumbnail_srcset": "https://ionpeptide.com/wp-content/uploads/2025/09/image-48-300x300.png 300w, https://ionpeptide.com/wp-content/uploads/2025/09/image-48-100x100.png 100w, https://ionpeptide.com/wp-content/uploads/2025/09/image-48-150x150.png 150w, https://ionpeptide.com/wp-content/uploads/2025/09/image-48-50x50.png 50w, https://ionpeptide.com/wp-content/uploads/2025/09/image-48.png 556w",
+      "thumbnail_sizes": "(max-width: 300px) 100vw, 300px",
+      "name": "image (48)",
+      "alt": ""
+    },
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/others/"
+  },
+  {
+    "id": 82,
+    "name": "Peptides",
+    "slug": "peptides",
+    "description": "",
+    "parent": 0,
+    "count": 119,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/peptides/"
+  },
+  {
+    "id": 94,
+    "name": "Raw",
+    "slug": "raw",
+    "description": "",
+    "parent": 82,
+    "count": 5,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/peptides/raw/"
+  },
+  {
+    "id": 52,
+    "name": "Signal Transduction Pathways",
+    "slug": "signal-transduction-pathways",
+    "description": "",
+    "parent": 0,
+    "count": 65,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/signal-transduction-pathways/"
+  },
+  {
+    "id": 50,
+    "name": "Tissue Remodeling &amp; Protein Function",
+    "slug": "tissue-remodeling-protein-function",
+    "description": "",
+    "parent": 0,
+    "count": 54,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/tissue-remodeling-protein-function/"
+  },
+  {
+    "id": 16,
+    "name": "Uncategorized",
+    "slug": "uncategorized",
+    "description": "",
+    "parent": 0,
+    "count": 42,
+    "image": null,
+    "review_count": 0,
+    "permalink": "https://ionpeptide.com/product-category/uncategorized/"
+  }
+]
