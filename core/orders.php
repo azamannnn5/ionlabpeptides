@@ -14,6 +14,7 @@ add_action('phpmailer_init', function ($m) { $m->Sender = ionlab_contact_email()
 /* WooCommerce's own order emails are off for orders made through this flow (we send our own). */
 foreach (array('new_order', 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'cancelled_order', 'failed_order') as $id) {
     add_filter('woocommerce_email_enabled_' . $id, function ($enabled, $order = null) {
+        if (!empty($GLOBALS['ionlab_creating'])) return false;
         return ($order && is_object($order) && method_exists($order, 'get_meta') && $order->get_meta('_ion_order')) ? false : $enabled;
     }, 10, 2);
 }
@@ -105,8 +106,9 @@ function ionlab_build_lines($cart) {
 
 function ionlab_create_wc_order($c, $b, $payment) {
     if (!function_exists('wc_create_order')) return 0;
+    $GLOBALS['ionlab_creating'] = true;
     try {
-        $order = wc_create_order(array('status' => 'on-hold'));
+        $order = wc_create_order(array('status' => 'pending'));
         foreach ($b['lines'] as $l) {
             $order->add_product($l['wc'], $l['qty'], array('subtotal' => $l['line'], 'total' => $l['line']));
         }
@@ -123,9 +125,14 @@ function ionlab_create_wc_order($c, $b, $payment) {
         $order->update_meta_data('_ion_payment_choice', $payment);
         $order->calculate_totals(false);
         $order->save();
-        return $order->get_id();
+        $order->set_status('on-hold');
+        $order->save();
+        $id = $order->get_id();
+        $GLOBALS['ionlab_creating'] = false;
+        return $id;
     } catch (Throwable $e) {
         error_log('ionlab order: ' . $e->getMessage());
+        $GLOBALS['ionlab_creating'] = false;
         return 0;
     }
 }
