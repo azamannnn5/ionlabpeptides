@@ -1,0 +1,30 @@
+/* Cart, checkout and form notices added for the WordPress version. */
+.ion-wp-wrap{max-width:1040px;margin:0 auto;padding:150px 16px 64px;font-family:inherit;color:#1c2333}
+.ion-wp-wrap h1{font-size:34px;line-height:1.15;color:#0a1f5c;margin:0 0 20px}
+.ion-wp-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:start}
+@media(max-width:820px){.ion-wp-grid{grid-template-columns:1fr}.ion-wp-wrap{padding-top:120px}}
+.ion-wp-card{background:#fff;border:1px solid #e3e7ef;border-radius:16px;padding:22px;box-shadow:0 6px 24px rgba(10,31,92,.06)}
+.ion-wp-card h2{font-size:20px;margin:0 0 14px;color:#0a1f5c}
+.ion-wp-field{display:block;margin:0 0 12px}
+.ion-wp-field span{display:block;font-size:13px;color:#566078;margin-bottom:4px}
+.ion-wp-field input,.ion-wp-field select,.ion-wp-field textarea{width:100%;box-sizing:border-box;border:1px solid #cfd6e4;border-radius:10px;padding:11px 12px;font:inherit;background:#fff}
+.ion-wp-field input:focus,.ion-wp-field select:focus,.ion-wp-field textarea:focus{outline:2px solid #0a74ff;border-color:#0a74ff}
+.ion-wp-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.ion-wp-two{grid-template-columns:1fr}}
+.ion-wp-line{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #eef0f5}
+.ion-wp-line img{width:56px;height:56px;object-fit:contain;border-radius:8px;background:#f5f7fb}
+.ion-wp-line .nm{flex:1;min-width:0}.ion-wp-line .nm small{display:block;color:#6b7385}
+.ion-wp-line .pr{font-weight:700}
+.ion-wp-qty{display:inline-flex;align-items:center;gap:6px;margin-top:4px}
+.ion-wp-qty button{width:26px;height:26px;border-radius:50%;border:1px solid #cfd6e4;background:#fff;cursor:pointer;font-size:15px;line-height:1}
+.ion-wp-qty button:hover{background:#eef4ff}
+.ion-wp-row{display:flex;justify-content:space-between;margin:8px 0;font-size:15px}
+.ion-wp-row.total{border-top:2px solid #0a1f5c;padding-top:10px;font-weight:700;font-size:18px}
+.ion-wp-btn{display:block;width:100%;text-align:center;box-sizing:border-box;border:0;border-radius:12px;padding:14px 18px;background:#0a74ff;color:#fff!important;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;margin-top:14px}
+.ion-wp-btn:hover{background:#0860d6}.ion-wp-btn[disabled]{opacity:.6;cursor:wait}
+.ion-wp-msg{border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:14px}
+.ion-wp-msg.err{background:#fff0f0;color:#9b1c1c;border:1px solid #f3c1c1}
+.ion-wp-msg.ok{background:#eefaf1;color:#14532d;border:1px solid #b9e6c4}
+.ion-wp-empty{text-align:center;padding:40px 10px;color:#566078}
+.ion-wp-note{font-size:13px;color:#6b7385;margin-top:12px}
+.ion-wp-done{text-align:center;padding:30px 10px}.ion-wp-done h2{font-size:26px}

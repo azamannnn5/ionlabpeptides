@@ -23,6 +23,17 @@ if (ionlab_seo_plugin_active()) {
         $html = preg_replace_callback('~(<head[^>]*>)~i', function ($m) use ($keep) { return $m[1] . "\n" . $keep; }, $html, 1);
     }
 }
+/* Cart, checkout and contact glue (admin-ajax, cache-busted by file time). */
+$ion_base = untrailingslashit(home_url('/'));
+$ion_fee = function_exists('ionlab_fee') ? ionlab_fee() : 3;
+$inject = '<link rel="stylesheet" href="' . esc_url($ion_base . '/assets/css/ion-wp.css?ver=' . @filemtime(__DIR__ . '/assets/css/ion-wp.css')) . '">'
+    . '<script>window.IONLAB=' . wp_json_encode(array('ajax' => admin_url('admin-ajax.php'), 'root' => trailingslashit(home_url('/')), 'fee' => (float) $ion_fee)) . ';</script>'
+    . '<script src="' . esc_url($ion_base . '/assets/js/ion-wp.js?ver=' . @filemtime(__DIR__ . '/assets/js/ion-wp.js')) . '"></script>';
+if (stripos($html, '</body>') !== false) {
+    $html = preg_replace_callback('~</body>~i', function ($m) use ($inject) { return $inject . '</body>'; }, $html, 1);
+} else {
+    $html .= $inject;
+}
 status_header(200);
 header('Content-Type: text/html; charset=UTF-8');
 echo $html;

@@ -4,6 +4,7 @@ if (!defined('ABSPATH')) exit;
 
 define('IONLAB_THEME_DIR', WP_CONTENT_DIR . '/themes/ionlab');
 define('IONLAB_RUNTIME_CACHE', 'ionlab_rt_' . substr(md5(@filemtime(__FILE__)), 0, 8));
+require_once __DIR__ . '/orders.php';
 
 /* ---------- Legacy data (original runtime.js) ---------- */
 function ionlab_legacy() {

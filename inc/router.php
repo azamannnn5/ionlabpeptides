@@ -13,7 +13,7 @@ add_action('init', function () {
     add_rewrite_rule('^product/([A-Za-z0-9_-]+)\.html/?$', 'index.php?post_type=product&name=$matches[1]', 'top');
     add_rewrite_rule('^peptide-information/([A-Za-z0-9_-]+)\.html/?$', 'index.php?pagename=peptide-information/$matches[1]', 'top');
     add_rewrite_rule('^([A-Za-z0-9_-]+)\.html/?$', 'index.php?pagename=$matches[1]', 'top');
-    add_rewrite_rule('^(assets|admin)/(.+)$', 'index.php?ion_static=$matches[1]/$matches[2]', 'top');
+    add_rewrite_rule('^assets/(.+)$', 'index.php?ion_static=assets/$matches[1]', 'top');
     add_rewrite_rule('^data/(.+)$', 'index.php?ion_static=data/$matches[1]', 'top');
 });
 add_filter('query_vars', function ($v) { $v[] = 'ion_static'; return $v; });
@@ -68,7 +68,7 @@ add_filter('template_include', function ($tpl) {
 /* ---------- Static files (assets, admin, data) ---------- */
 function ionlab_serve_static($rel) {
     $rel = ltrim(str_replace(array('\\', '..'), '', $rel), '/');
-    if (!preg_match('~^(assets|admin|data)/~', $rel)) { status_header(404); exit; }
+    if (!preg_match('~^(assets|data)/~', $rel)) { status_header(404); exit; }
     if ($rel === 'data/runtime.js') {
         $js = apply_filters('ionlab_runtime_js', null);
         if (is_string($js)) {
