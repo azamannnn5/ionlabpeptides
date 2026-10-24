@@ -89,3 +89,6 @@ function ionlab_serve_static($rel) {
     readfile($path);
     exit;
 }
+
+/* The visitor cart lives in the browser, so WooCommerce's own cart is always empty: never redirect /checkout to /cart. */
+add_filter('woocommerce_checkout_redirect_empty_cart', '__return_false');

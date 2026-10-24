@@ -229,3 +229,7 @@ add_action('init', function () {
         'public' => false, 'show_ui' => true, 'show_in_menu' => true, 'menu_icon' => 'dashicons-email', 'supports' => array('title', 'editor'),
         'capabilities' => array('create_posts' => 'do_not_allow'), 'map_meta_cap' => true));
 });
+
+/* WooCommerce sender settings follow the contact email. */
+add_filter('pre_option_woocommerce_email_from_address', function () { return ionlab_contact_email(); });
+add_filter('pre_option_woocommerce_email_from_name', function () { return ionlab_brand(); });
