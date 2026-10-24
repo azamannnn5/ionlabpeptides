@@ -26,3 +26,34 @@ add_action('admin_init', function () {
     delete_transient('ionlab_rt_cache');
     wp_die('Cutover done: ' . esc_html(implode(', ', $log)) . '. Site: ' . esc_html($home), 'Done', array('response' => 200));
 });
+
+// One-time admin action: move WordPress files from /wp into the domain root.
+add_action('admin_init', function () {
+    if (empty($_GET['ionlab_move']) || !current_user_can('manage_options')) return;
+    $dir  = untrailingslashit(ABSPATH);
+    $root = dirname($dir);
+    $sub  = basename($dir);
+    $log  = array();
+    if ($sub !== 'wp') wp_die('Not in /wp, nothing to do.');
+    if (defined('WP_HOME') || defined('WP_SITEURL')) $log[] = 'NOTE: WP_HOME/WP_SITEURL defined in wp-config';
+    // Root rules: old /wp URLs redirect to the root, then standard WordPress rules.
+    $ht = file_exists($root . '/.htaccess') ? file_get_contents($root . '/.htaccess') : '';
+    if (strpos($ht, 'ionlab-wp-redirect') === false) {
+        $ht = preg_replace('/# BEGIN WordPress/', "# ionlab-wp-redirect\nRewriteEngine On\nRewriteRule ^wp/?(.*)\$ /\$1 [R=301,L]\n# BEGIN WordPress", $ht, 1);
+        file_put_contents($root . '/.htaccess', $ht);
+    }
+    if (file_exists($root . '/index.php') && strpos(file_get_contents($root . '/index.php'), "/wp/wp-blog-header") !== false) {
+        unlink($root . '/index.php');
+    }
+    foreach (scandir($dir) as $f) {
+        if ($f === '.' || $f === '..' || $f === '.htaccess') continue;
+        if (file_exists("$root/$f")) { $log[] = "skipped $f (exists)"; continue; }
+        if (@rename("$dir/$f", "$root/$f")) $log[] = "moved $f"; else $log[] = "FAILED $f";
+    }
+    $new = 'http://ionlabpeptides.com';
+    update_option('siteurl', $new);
+    update_option('home', $new);
+    @rename("$dir/.htaccess", "$root/.htaccess.old-wp");
+    @rmdir($dir);
+    wp_die('Move done: ' . esc_html(implode(', ', $log)), 'Done', array('response' => 200));
+});
