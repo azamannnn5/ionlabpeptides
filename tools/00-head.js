@@ -5,7 +5,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const RAW = path.join(ROOT, 'raw');
 const OUT = path.join(ROOT, 'site');
-const ORIGIN = 'https://ionpeptide.com';
+const ORIGIN = 'https://ionlabpeptides.com';
 
 const readJSON = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
 const mkdirp = (p) => fs.mkdirSync(p, { recursive: true });

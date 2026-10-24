@@ -1,6 +1,6 @@
-# ionpeptide.com static copy
+# ionlabpeptides.com static copy
 
-Static copy (plain HTML, CSS and JS) of https://ionpeptide.com made on 2026-10-14 and 2026-10-15.
+Static copy (plain HTML, CSS and JS) of https://ionlabpeptides.com made on 2026-10-14 and 2026-10-15.
 Open index.html through any static web server (for example: python3 -m http.server).
 
 Original branding, text and photos are kept as on the source site and must be replaced before a real launch.

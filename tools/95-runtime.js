@@ -75,14 +75,14 @@ console.log('runtime products', Object.keys(RT.products).length, 'cards', RT.car
 {
   const pages = Object.keys(PAGES).map((k) => ({ path: k, file: fileForPath(k), title: PAGES[k].title || '' }));
   write('data/site-info.json', JSON.stringify({
-    source_site: 'https://ionpeptide.com',
+    source_site: 'https://ionlabpeptides.com',
     captured_on: '2026-10-14 to 2026-10-15',
     home_title: PAGES['/'].title, home_description: PAGES['/'].desc || '',
     product_count: PRODUCTS.length, page_count: pages.length, pages,
   }, null, 1));
-  write('README.md', `# ionpeptide.com static copy
+  write('README.md', `# ionlabpeptides.com static copy
 
-Static copy (plain HTML, CSS and JS) of https://ionpeptide.com made on 2026-10-14 and 2026-10-15.
+Static copy (plain HTML, CSS and JS) of https://ionlabpeptides.com made on 2026-10-14 and 2026-10-15.
 Open index.html through any static web server (for example: python3 -m http.server).
 
 Original branding, text and photos are kept as on the source site and must be replaced before a real launch.
