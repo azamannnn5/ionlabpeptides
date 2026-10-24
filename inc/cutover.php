@@ -39,7 +39,8 @@ add_action('admin_init', function () {
     // Root rules: old /wp URLs redirect to the root, then standard WordPress rules.
     $ht = file_exists($root . '/.htaccess') ? file_get_contents($root . '/.htaccess') : '';
     if (strpos($ht, 'ionlab-wp-redirect') === false) {
-        $ht = preg_replace('/# BEGIN WordPress/', "# ionlab-wp-redirect\nRewriteEngine On\nRewriteRule ^wp/?(.*)\$ /\$1 [R=301,L]\n# BEGIN WordPress", $ht, 1);
+        $rule = "# ionlab-wp-redirect\nRewriteEngine On\nRewriteRule ^wp/?(.*)$ /$1 [R=301,L]\n# BEGIN WordPress";
+        $ht = str_replace('# BEGIN WordPress', $rule, $ht);
         file_put_contents($root . '/.htaccess', $ht);
     }
     if (file_exists($root . '/index.php') && strpos(file_get_contents($root . '/index.php'), "/wp/wp-blog-header") !== false) {
