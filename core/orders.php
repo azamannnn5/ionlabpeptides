@@ -1,10 +1,12 @@
 <?php
 /* Orders, contact form and email for the Ionlab site. No SMTP password is stored: mail goes through the server's own mail system. */
 if (!defined('ABSPATH')) exit;
+require_once __DIR__ . '/settings.php';
+add_action('plugins_loaded', function () { require_once __DIR__ . '/accounts.php'; }, 20);
 
-function ionlab_contact_email() { return sanitize_email(get_option('ionlab_contact_email', 'support@ionlabpeptides.com')) ?: 'support@ionlabpeptides.com'; }
-function ionlab_brand() { return get_option('ionlab_brand_name', 'Ion Peptide'); }
-function ionlab_fee() { $f = get_option('ionlab_shipping_protection', '3'); return is_numeric($f) ? (float) $f : 3.0; }
+function ionlab_contact_email() { return sanitize_email(ionlab_site('email')) ?: 'support@ionlabpeptides.com'; }
+function ionlab_brand() { return ionlab_site('brand') ?: 'Ion Peptide'; }
+function ionlab_fee() { $f = ionlab_site('fee'); return is_numeric($f) ? (float) $f : 3.0; }
 
 /* Send from the support address and use it as the envelope sender (helps SPF). */
 add_filter('wp_mail_from', function () { return ionlab_contact_email(); });
@@ -60,7 +62,7 @@ function ionlab_items_html($lines) {
 }
 function ionlab_totals_html($t) {
     $r = function ($a, $b, $bold = false) { return '<div style="margin:6px 0;' . ($bold ? 'font-weight:bold;font-size:17px;border-top:2px solid #0a1f5c;padding-top:8px' : '') . '"><span style="float:right">' . esc_html($b) . '</span>' . esc_html($a) . '<div style="clear:both"></div></div>'; };
-    return '<div style="margin-top:12px">' . $r('Subtotal', ionlab_money_fmt($t['subtotal'])) . $r('Shipping protection', ionlab_money_fmt($t['fee'])) . $r('Total', ionlab_money_fmt($t['total']), true) . '</div>';
+    return '<div style="margin-top:12px">' . $r('Subtotal', ionlab_money_fmt($t['subtotal'])) . (!empty($t['discount']) ? $r('Discount (' . $t['coupon'] . ')', '-' . ionlab_money_fmt($t['discount'])) : '') . $r('Shipping protection', ionlab_money_fmt($t['fee'])) . $r('Total', ionlab_money_fmt($t['total']), true) . '</div>';
 }
 
 /* ---------- build an order from the cart, using server prices ---------- */
@@ -70,7 +72,25 @@ function ionlab_find_product($legacy_id) {
     $p = wc_get_product($pid);
     return ($p && $p->get_status() === 'publish') ? $p : null;
 }
-function ionlab_build_lines($cart) {
+function ionlab_coupon_discount($code, $sub) {
+    $code = trim((string) $code);
+    if ($code === '') return array('discount' => 0.0, 'code' => '');
+    if (!class_exists('WC_Coupon')) return new WP_Error('coupon', 'Promo codes are not available right now.');
+    $c = new WC_Coupon(wc_format_coupon_code($code));
+    $bad = new WP_Error('coupon', 'That promo code is not valid.');
+    if (!$c->get_id() || get_post_status($c->get_id()) !== 'publish') return $bad;
+    if ($c->get_date_expires() && $c->get_date_expires()->getTimestamp() < time()) return new WP_Error('coupon', 'That promo code has expired.');
+    if ($c->get_usage_limit() > 0 && $c->get_usage_count() >= $c->get_usage_limit()) return new WP_Error('coupon', 'That promo code has reached its usage limit.');
+    if ($c->get_minimum_amount() > 0 && $sub < (float) $c->get_minimum_amount()) return new WP_Error('coupon', 'Spend at least ' . ionlab_money_fmt($c->get_minimum_amount()) . ' to use this code.');
+    if ($c->get_maximum_amount() > 0 && $sub > (float) $c->get_maximum_amount()) return new WP_Error('coupon', 'This code is not valid for orders this large.');
+    $type = $c->get_discount_type(); $amt = (float) $c->get_amount();
+    if ($type === 'percent') $d = $sub * $amt / 100;
+    elseif ($type === 'fixed_cart') $d = $amt;
+    else return $bad;
+    $d = round(min($sub, max(0, $d)), 2);
+    return array('discount' => $d, 'code' => strtoupper($c->get_code()));
+}
+function ionlab_build_lines($cart, $code = '') {
     $legacy = ionlab_legacy();
     $lines = array(); $sub = 0.0;
     foreach ((array) $cart as $it) {
@@ -101,7 +121,9 @@ function ionlab_build_lines($cart) {
     }
     if (!$lines) return new WP_Error('item', 'Your cart is empty.');
     $fee = ionlab_fee();
-    return array('lines' => $lines, 'totals' => array('subtotal' => round($sub, 2), 'fee' => $fee, 'total' => round($sub + $fee, 2)));
+    $cp = ionlab_coupon_discount($code, round($sub, 2));
+    if (is_wp_error($cp)) return $cp;
+    return array('lines' => $lines, 'totals' => array('subtotal' => round($sub, 2), 'fee' => $fee, 'discount' => $cp['discount'], 'coupon' => $cp['code'], 'total' => round($sub + $fee - $cp['discount'], 2)));
 }
 
 function ionlab_create_wc_order($c, $b, $payment) {
@@ -115,12 +137,20 @@ function ionlab_create_wc_order($c, $b, $payment) {
         $fee = new WC_Order_Item_Fee();
         $fee->set_name('Shipping Protection'); $fee->set_amount($b['totals']['fee']); $fee->set_total($b['totals']['fee']); $fee->set_tax_status('none');
         $order->add_item($fee);
+        if (!empty($b['totals']['discount'])) {
+            $dc = new WC_Order_Item_Fee();
+            $dc->set_name('Discount (' . $b['totals']['coupon'] . ')'); $dc->set_amount(-$b['totals']['discount']); $dc->set_total(-$b['totals']['discount']); $dc->set_tax_status('none');
+            $order->add_item($dc);
+            $order->update_meta_data('_ion_coupon', $b['totals']['coupon']);
+            $cpn = new WC_Coupon($b['totals']['coupon']); if ($cpn->get_id()) $cpn->increment_usage_count();
+        }
         $addr = array('first_name' => $c['first'], 'last_name' => $c['last'], 'email' => $c['email'], 'phone' => $c['phone'],
             'address_1' => $c['address'], 'address_2' => $c['address2'], 'city' => $c['city'], 'state' => $c['state'], 'postcode' => $c['zip'], 'country' => $c['country']);
         $order->set_address($addr, 'billing');
         $order->set_address(array_diff_key($addr, array('email' => 1, 'phone' => 1)), 'shipping');
         $order->set_payment_method_title($payment);
         if ($c['notes'] !== '') $order->set_customer_note($c['notes']);
+        if (is_user_logged_in()) $order->set_customer_id(get_current_user_id());
         $order->update_meta_data('_ion_order', 1);
         $order->update_meta_data('_ion_payment_choice', $payment);
         $order->calculate_totals(false);
@@ -155,7 +185,7 @@ function ionlab_ajax_order() {
     if ($c['first'] === '' || $c['last'] === '' || !is_email($c['email']) || $c['address'] === '' || $c['city'] === '' || $c['zip'] === '') {
         ionlab_json(false, 'Please fill in your name, email and shipping address.');
     }
-    $b = ionlab_build_lines($in['cart'] ?? array());
+    $b = ionlab_build_lines($in['cart'] ?? array(), $in['coupon'] ?? '');
     if (is_wp_error($b)) ionlab_json(false, $b->get_error_message());
 
     /* 1. Save the order first, so it is safe even if mail fails. */
@@ -209,21 +239,21 @@ function ionlab_ajax_contact() {
     if (!ionlab_rate_limit('contact', 20)) ionlab_json(false, 'Too many requests. Please try again later.');
     $first = ionlab_clean($in['first_name'] ?? '', 60); $last = ionlab_clean($in['last_name'] ?? '', 60);
     $email = sanitize_email($in['email'] ?? ''); $phone = ionlab_clean($in['phone'] ?? '', 40);
-    $order = ionlab_clean($in['order_number'] ?? '', 40); $msg = ionlab_clean($in['message'] ?? '', 4000);
+    $order = ionlab_clean($in['order_number'] ?? '', 40); $msg = ionlab_clean($in['message'] ?? '', 4000); $kind = ionlab_clean($in['kind'] ?? '', 60);
     if ($first === '' || !is_email($email) || $msg === '') ionlab_json(false, 'Please fill in your name, email and message.');
     $full = trim($first . ' ' . $last);
     $support = ionlab_contact_email(); $brand = ionlab_brand();
 
     /* Save first. */
-    $post_id = wp_insert_post(array('post_type' => 'ion_message', 'post_status' => 'private', 'post_title' => $full . ' - ' . ($order ? 'Order ' . $order : 'Contact form'),
+    $post_id = wp_insert_post(array('post_type' => 'ion_message', 'post_status' => 'private', 'post_title' => $full . ' - ' . ($kind ?: ($order ? 'Order ' . $order : 'Contact form')),
         'post_content' => $msg, 'meta_input' => array('_ion_email' => $email, '_ion_phone' => $phone, '_ion_order_number' => $order)));
 
     $inner = ionlab_row('From', esc_html($full)) . ionlab_row('Email', '<a href="mailto:' . esc_attr($email) . '">' . esc_html($email) . '</a>')
         . ionlab_row('Phone', esc_html($phone ?: 'Not given')) . ($order ? ionlab_row('Order number', esc_html($order)) : '')
         . ionlab_row('Message', nl2br(esc_html($msg))) . '<p style="margin:16px 0 0;font-size:13px;color:#6b7385">Press Reply to answer the customer.</p>';
-    $ok1 = wp_mail($support, 'Contact form: ' . ($order ? 'Order ' . $order . ' - ' : '') . $full, ionlab_email_html('New contact message', $inner),
+    $ok1 = wp_mail($support, ($kind ?: 'Contact form') . ': ' . ($order ? 'Order ' . $order . ' - ' : '') . $full, ionlab_email_html($kind ?: 'New contact message', $inner),
         array('Content-Type: text/html; charset=UTF-8', 'Reply-To: ' . $full . ' <' . $email . '>'));
-    $rc = '<p style="margin:0 0 14px">Hi ' . esc_html($first) . ', thank you for contacting us. We received your message and will reply as soon as we can.</p>' . ionlab_row('Your message', nl2br(esc_html($msg)));
+    $rc = '<p style="margin:0 0 14px">Hi ' . esc_html($first) . ', thank you for contacting us. We received your ' . ($kind ? 'request' : 'message') . ' and will reply as soon as we can.</p>' . ionlab_row('Your message', nl2br(esc_html($msg)));
     $ok2 = wp_mail($email, 'We received your message - ' . $brand, ionlab_email_html('Thank you for contacting us', $rc),
         array('Content-Type: text/html; charset=UTF-8', 'Reply-To: ' . $brand . ' <' . $support . '>'));
     if ($post_id && !is_wp_error($post_id)) update_post_meta($post_id, '_ion_mail', ($ok1 ? 'sent' : 'failed') . '/' . ($ok2 ? 'sent' : 'failed'));
@@ -240,3 +270,15 @@ add_action('init', function () {
 /* WooCommerce sender settings follow the contact email. */
 add_filter('pre_option_woocommerce_email_from_address', function () { return ionlab_contact_email(); });
 add_filter('pre_option_woocommerce_email_from_name', function () { return ionlab_brand(); });
+
+/* Check a promo code against a cart and return the totals. */
+add_action('wp_ajax_nopriv_ionlab_coupon', 'ionlab_ajax_coupon');
+add_action('wp_ajax_ionlab_coupon', 'ionlab_ajax_coupon');
+function ionlab_ajax_coupon() {
+    $in = json_decode(wp_unslash($_POST['payload'] ?? ''), true);
+    if (!is_array($in)) ionlab_json(false, 'Something went wrong. Please try again.');
+    if (!ionlab_rate_limit('coupon', 60)) ionlab_json(false, 'Too many attempts. Please try again later.');
+    $b = ionlab_build_lines($in['cart'] ?? array(), $in['coupon'] ?? '');
+    if (is_wp_error($b)) ionlab_json(false, $b->get_error_message());
+    ionlab_json(true, 'Promo code applied.', array('discount' => $b['totals']['discount'], 'code' => $b['totals']['coupon']));
+}
