@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/ionlabpe/public_html/wp-content/themes/ionlab/
+    - /bin/cp -R -f * $DEPLOYPATH
