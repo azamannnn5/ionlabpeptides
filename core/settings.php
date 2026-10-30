@@ -134,6 +134,13 @@ function ionlab_apply_site($html) {
     $cfg = '<script>window.IONCMS=window.IONCMS||{};window.IONCMS.promoCfg=' . wp_json_encode(array('topbarEnabled' => $v['banner_on'] === '1', 'topbarHtml' => esc_html($v['banner_text']))) . ';</script>';
     $pos = stripos($html, '</head>');
     $html = ($pos !== false) ? substr($html, 0, $pos) . $cfg . substr($html, $pos) : $cfg . $html;
+    /* contact page phone: shown only when a phone is set */
+    if (trim($v['phone']) === '') {
+        $html = preg_replace('~<div[^>]*data-ion-phone[^>]*>.*?</div>~s', '', $html, 1);
+    } else {
+        $tel = esc_attr('tel:' . preg_replace('/[^0-9+]/', '', $v['phone']));
+        $html = preg_replace_callback('~(<div[^>]*data-ion-phone[^>]*>.*?)<a href="tel:">phone</a>~s', function ($m) use ($tel, $v) { return $m[1] . '<a href="' . $tel . '">' . esc_html($v['phone']) . '</a>'; }, $html, 1);
+    }
     /* footer contact lines */
     $lines = array();
     $addr = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string) $v['address'])));
